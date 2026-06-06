@@ -1,0 +1,25 @@
+.reg-page { padding: 24px 0 30px; }
+.back-link { color: var(--blue-600); font-weight: 700; font-size: 14px; display: inline-block; margin-bottom: 18px; }
+.reg-grid { display: grid; grid-template-columns: 1fr 360px; gap: 28px; align-items: start; }
+.reg-form { padding: 30px 32px; }
+.reg-form h1 { font-size: 30px; margin: 0 0 6px; }
+.reg-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.reg-form .rule { margin: 18px 0; }
+
+.reg-summary { display: flex; flex-direction: column; gap: 16px; position: sticky; top: 86px; }
+.rs-hero { position: relative; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 16px 16px 0 0; }
+.rs-hero img { width: 100%; height: 100%; object-fit: cover; }
+.rs-cap { position: absolute; bottom: 12px; right: 12px; }
+.rs-meta { display: flex; align-items: center; gap: 8px; color: var(--ink-soft); font-size: 14px; margin-bottom: 8px; }
+.reg-summary .rule { margin: 14px 0; }
+.secure { padding: 16px; display: flex; gap: 12px; background: var(--blue-50); border-color: #dbe6ff; color: var(--blue-700); }
+
+.success-card { max-width: 520px; margin: 0 auto; padding: 40px; }
+.success-icon { width: 70px; height: 70px; border-radius: 50%; background: var(--green-soft); color: var(--green); display: grid; place-items: center; margin: 0 auto 18px; }
+.success-card h1 { font-size: 28px; margin: 0 0 10px; }
+
+@media (max-width: 880px) {
+  .reg-grid { grid-template-columns: 1fr; }
+  .reg-summary { position: static; }
+  .reg-2col { grid-template-columns: 1fr; }
+}

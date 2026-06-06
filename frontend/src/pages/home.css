@@ -1,0 +1,49 @@
+.hero {
+  background:
+    radial-gradient(900px 500px at 85% -20%, #eaf0ff 0%, transparent 55%),
+    var(--bg);
+  padding: 56px 0 30px;
+}
+.hero-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 40px; align-items: center; }
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--amber-soft); color: #92600a; font-weight: 700; font-size: 13px;
+  padding: 8px 14px; border-radius: 999px; margin-bottom: 22px;
+}
+.hero h1 { font-size: 52px; line-height: 1.04; margin: 0 0 18px; letter-spacing: -.03em; }
+.hero h1 .blue { color: var(--blue-600); }
+.hero-left p { font-size: 17px; color: var(--ink-soft); line-height: 1.65; max-width: 480px; margin: 0 0 26px; }
+.hero-cta { display: flex; gap: 14px; flex-wrap: wrap; }
+
+.hero-logo-card {
+  background: linear-gradient(135deg, #ffffff, #f4f7ff);
+  border: 1px solid var(--line); border-radius: 24px; box-shadow: var(--shadow-lg);
+  padding: 40px; display: flex; align-items: center; gap: 22px;
+}
+.hl-name { font-family: var(--font-display); font-size: 40px; font-weight: 800; letter-spacing: -.04em; }
+.hl-tag { color: var(--ink-soft); font-size: 15px; }
+
+/* explore */
+.explore { padding: 30px 0; background: #fff; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.explore-head { display: flex; align-items: center; justify-content: space-between; gap: 22px; flex-wrap: wrap; margin-bottom: 18px; }
+.explore-head h2 { font-size: 30px; margin: 0; }
+.search-box {
+  display: flex; align-items: center; gap: 10px; background: var(--blue-50);
+  border: 1px solid var(--line); border-radius: 12px; padding: 11px 16px;
+  min-width: 340px; color: var(--muted); flex: 1; max-width: 420px;
+}
+.search-box input { border: none; background: transparent; outline: none; font-size: 15px; width: 100%; color: var(--ink); }
+.cat-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.cat-label { font-weight: 600; color: var(--ink-soft); font-size: 14px; }
+
+/* featured */
+.featured { padding: 44px 0 10px; }
+.view-all { color: var(--blue-600); font-weight: 700; font-size: 15px; display: inline-flex; align-items: center; gap: 6px; }
+.view-all:hover { gap: 10px; }
+
+@media (max-width: 860px) {
+  .hero-grid { grid-template-columns: 1fr; }
+  .hero h1 { font-size: 38px; }
+  .hero-right { order: -1; }
+  .search-box { min-width: 0; }
+}

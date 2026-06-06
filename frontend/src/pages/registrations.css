@@ -1,0 +1,19 @@
+.reglist { padding: 40px 0 20px; }
+.reglist h1 { font-size: 36px; margin: 0; }
+.bar-head { position: relative; padding-left: 14px; margin: 0; }
+.bar-head::before { content: ""; position: absolute; left: 0; top: 4px; bottom: 4px; width: 4px; border-radius: 2px; background: var(--amber); }
+
+.past-table { overflow: hidden; }
+.pt-head, .pt-row { display: grid; grid-template-columns: 2.4fr 1.4fr 1fr 1fr; gap: 14px; align-items: center; padding: 14px 20px; }
+.pt-head { background: var(--blue-50); font-size: 12px; font-weight: 800; letter-spacing: .05em; color: var(--ink-soft); }
+.pt-row { border-top: 1px solid var(--line); }
+.pt-ev { display: flex; align-items: center; gap: 12px; }
+.pt-ev img { width: 46px; height: 46px; border-radius: 10px; object-fit: cover; }
+.pt-ev strong { font-size: 15px; }
+.pt-action { color: var(--blue-600); font-weight: 700; font-size: 14px; }
+.pt-empty { padding: 30px; text-align: center; }
+
+@media (max-width: 760px) {
+  .pt-head { display: none; }
+  .pt-row { grid-template-columns: 1fr; gap: 8px; }
+}
