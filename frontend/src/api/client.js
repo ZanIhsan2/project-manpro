@@ -33,13 +33,17 @@ function token() {
 }
 
 async function real(path, { method = "GET", body, auth = false } = {}) {
-  const headers = { "Content-Type": "application/json" };
+  const headers = {};
+  const isFormData = body instanceof FormData;
+  if (!isFormData) {
+    headers["Content-Type"] = "application/json";
+  }
   if (auth && token()) headers.Authorization = `Bearer ${token()}`;
 
   const res = await fetch(`${BASE}${path}`, {
     method,
     headers,
-    body: body ? JSON.stringify(body) : undefined
+    body: body ? (isFormData ? body : JSON.stringify(body)) : undefined
   });
 
   const text = await res.text();
@@ -71,6 +75,10 @@ async function request(path, opts = {}, mockFn) {
   }
 }
 
+function unwrapData(response) {
+  return response?.data ?? response;
+}
+
 /* ----------------------------- AUTH ----------------------------- */
 export const auth = {
   register: (payload) =>
@@ -84,18 +92,32 @@ export const auth = {
   me: () => request("/users/me", { auth: true }, () => mock.me())
 };
 
+function toFormData(payload) {
+  const fd = new FormData();
+  Object.keys(payload).forEach((key) => {
+    if (key === "imageFile") {
+      if (payload[key]) {
+        fd.append("image", payload[key]);
+      }
+    } else if (payload[key] !== undefined && payload[key] !== null) {
+      fd.append(key, payload[key]);
+    }
+  });
+  return fd;
+}
+
 /* ----------------------------- EVENTS ----------------------------- */
 export const events = {
-  list: () => request("/events", {}, () => mock.listEvents()),
-  get: (id) => request(`/events/${id}`, {}, () => mock.getEvent(id)),
+  list: () => request("/events", {}, () => mock.listEvents()).then(unwrapData),
+  get: (id) => request(`/events/${id}`, {}, () => mock.getEvent(id)).then(unwrapData),
   create: (payload) =>
-    request("/events", { method: "POST", body: payload, auth: true }, () =>
+    request("/events", { method: "POST", body: toFormData(payload), auth: true }, () =>
       mock.createEvent(payload)
-    ),
+    ).then(unwrapData),
   update: (id, payload) =>
-    request(`/events/${id}`, { method: "PUT", body: payload, auth: true }, () =>
+    request(`/events/${id}`, { method: "PUT", body: toFormData(payload), auth: true }, () =>
       mock.updateEvent(id, payload)
-    ),
+    ).then(unwrapData),
   remove: (id) =>
     request(`/events/${id}`, { method: "DELETE", auth: true }, () =>
       mock.removeEvent(id)
@@ -104,20 +126,20 @@ export const events = {
 
 /* --------------------------- CATEGORIES --------------------------- */
 export const categories = {
-  list: () => request("/categories", {}, () => mock.listCategories()),
+  list: () => request("/categories", {}, () => mock.listCategories()).then(unwrapData),
   create: (payload) =>
     request("/categories", { method: "POST", body: payload, auth: true }, () =>
       mock.createCategory(payload)
-    )
+    ).then(unwrapData)
 };
 
 /* -------------------------- REGISTRATIONS ------------------------- */
 export const registrations = {
-  list: () => request("/registrations", { auth: true }, () => mock.listRegistrations()),
+  list: () => request("/registrations", { auth: true }, () => mock.listRegistrations()).then(unwrapData),
   create: (payload) =>
     request("/registrations", { method: "POST", body: payload, auth: true }, () =>
       mock.createRegistration(payload)
-    ),
+    ).then(unwrapData),
   remove: (id) =>
     request(`/registrations/${id}`, { method: "DELETE", auth: true }, () =>
       mock.removeRegistration(id)
@@ -126,11 +148,11 @@ export const registrations = {
 
 /* ---------------------------- BOOKMARKS --------------------------- */
 export const bookmarks = {
-  list: () => request("/bookmarks", { auth: true }, () => mock.listBookmarks()),
+  list: () => request("/bookmarks", { auth: true }, () => mock.listBookmarks()).then(unwrapData),
   create: (payload) =>
     request("/bookmarks", { method: "POST", body: payload, auth: true }, () =>
       mock.createBookmark(payload)
-    ),
+    ).then(unwrapData),
   remove: (id) =>
     request(`/bookmarks/${id}`, { method: "DELETE", auth: true }, () =>
       mock.removeBookmark(id)
@@ -139,5 +161,12 @@ export const bookmarks = {
 
 /* -------------------------- NOTIFICATIONS ------------------------- */
 export const notifications = {
-  list: () => request("/notifications", { auth: true }, () => mock.listNotifications())
+  list: () => request("/notifications", { auth: true }, () => mock.listNotifications()).then(unwrapData),
+  update: (id, payload) => request(`/notifications/${id}`, { method: "PUT", body: payload, auth: true }, () => mock.updateNotification(id, payload)).then(unwrapData),
+  remove: (id) => request(`/notifications/${id}`, { method: "DELETE", auth: true }, () => mock.removeNotification(id))
+};
+
+/* ----------------------------- USERS ------------------------------ */
+export const users = {
+  list: () => request("/users", { auth: true }, () => mock.listUsers()).then(unwrapData)
 };

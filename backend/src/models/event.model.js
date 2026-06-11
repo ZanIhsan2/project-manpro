@@ -38,8 +38,8 @@ async function create(payload) {
   const [result] = await pool.query(
     `
       INSERT INTO ${TABLE_NAME}
-        (admin_id, category_id, title, description, location, start_time, end_time, organizer, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (admin_id, category_id, title, description, location, image_path, start_time, end_time, organizer, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `,
     [
       payload.admin_id,
@@ -47,6 +47,7 @@ async function create(payload) {
       payload.title,
       payload.description || null,
       payload.location || null,
+      payload.image_path || null,
       payload.start_time,
       payload.end_time,
       payload.organizer || null,
@@ -58,32 +59,63 @@ async function create(payload) {
 }
 
 async function update(id, payload) {
-  await pool.query(
-    `
-      UPDATE ${TABLE_NAME}
-      SET
-        category_id = ?,
-        title = ?,
-        description = ?,
-        location = ?,
-        start_time = ?,
-        end_time = ?,
-        organizer = ?,
-        status = ?
-      WHERE id = ?
-    `,
-    [
-      payload.category_id || null,
-      payload.title,
-      payload.description || null,
-      payload.location || null,
-      payload.start_time,
-      payload.end_time,
-      payload.organizer || null,
-      payload.status || "upcoming",
-      id
-    ]
-  );
+  if (payload.image_path !== undefined) {
+    await pool.query(
+      `
+        UPDATE ${TABLE_NAME}
+        SET
+          category_id = ?,
+          title = ?,
+          description = ?,
+          location = ?,
+          image_path = ?,
+          start_time = ?,
+          end_time = ?,
+          organizer = ?,
+          status = ?
+        WHERE id = ?
+      `,
+      [
+        payload.category_id || null,
+        payload.title,
+        payload.description || null,
+        payload.location || null,
+        payload.image_path || null,
+        payload.start_time,
+        payload.end_time,
+        payload.organizer || null,
+        payload.status || "upcoming",
+        id
+      ]
+    );
+  } else {
+    await pool.query(
+      `
+        UPDATE ${TABLE_NAME}
+        SET
+          category_id = ?,
+          title = ?,
+          description = ?,
+          location = ?,
+          start_time = ?,
+          end_time = ?,
+          organizer = ?,
+          status = ?
+        WHERE id = ?
+      `,
+      [
+        payload.category_id || null,
+        payload.title,
+        payload.description || null,
+        payload.location || null,
+        payload.start_time,
+        payload.end_time,
+        payload.organizer || null,
+        payload.status || "upcoming",
+        id
+      ]
+    );
+  }
 
   return findById(id);
 }

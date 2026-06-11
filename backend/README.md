@@ -7,10 +7,18 @@ Backend Node.js/Express untuk aplikasi event kampus.
 ```bash
 npm install
 cp .env.example .env
+npm run seed:users
 npm run dev
 ```
 
 Sesuaikan nilai database di `.env`, lalu import file SQL ke MySQL/MariaDB.
+
+## Akun Awal
+
+Jalankan `npm run seed:users` setelah database siap untuk membuat akun:
+
+- Admin: `admin@university.edu` / `admin123`
+- Mahasiswa: `demo@university.edu` / `demo123`
 
 ## Struktur
 

@@ -51,7 +51,7 @@ export default function MyRegistrations() {
               {upcoming.map((r) => (
                 <article key={r.id} className="ev-card fade-up">
                   <Link to={`/events/${r.event.id}`} className="ev-media">
-                    <img src={r.event.image || FALLBACK} alt={r.event.title} onError={(e) => (e.currentTarget.src = FALLBACK)} />
+                    <img src={r.event.image_path ? `/uploads/${r.event.image_path}` : (r.event.image || FALLBACK)} alt={r.event.title} onError={(e) => (e.currentTarget.src = FALLBACK)} />
                     <span className="ev-date"><strong>{dayNum(r.event.start_time)}</strong><em>{monthShort(r.event.start_time)}</em></span>
                     {r.event.category_name && <span className="badge badge-amber ev-cat">{r.event.category_name}</span>}
                   </Link>
@@ -82,7 +82,7 @@ export default function MyRegistrations() {
             ) : past.map((r) => (
               <div className="pt-row" key={r.id}>
                 <div className="pt-ev">
-                  <img src={r.event.image || FALLBACK} alt="" onError={(e) => (e.currentTarget.src = FALLBACK)} />
+                  <img src={r.event.image_path ? `/uploads/${r.event.image_path}` : (r.event.image || FALLBACK)} alt="" onError={(e) => (e.currentTarget.src = FALLBACK)} />
                   <div>
                     <strong>{r.event.title}</strong>
                     <div className="tiny muted">{r.event.category_name || "—"}</div>

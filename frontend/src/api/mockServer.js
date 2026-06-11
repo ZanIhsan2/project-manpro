@@ -147,6 +147,20 @@ export function createEvent(payload) {
     price: payload.price || 0
   };
   db.events.push(e);
+
+  // Automatically create notifications for all students
+  const students = db.users.filter((usr) => usr.role === "mahasiswa");
+  students.forEach((student) => {
+    db.notifications.push({
+      id: ++db.seq.bookmark, // using a mock sequence number
+      user_id: student.id,
+      event_id: e.id,
+      message: `Event baru ditambahkan: "${e.title}". Yuk daftar!`,
+      is_read: 0,
+      sent_at: new Date().toISOString().slice(0, 19).replace("T", " ")
+    });
+  });
+
   save(db);
   return delay(enrich(db, e));
 }
@@ -250,5 +264,49 @@ export function removeBookmark(id) {
 export function listNotifications() {
   const db = load();
   const u = currentUser();
-  return delay(db.notifications.filter((n) => (u ? n.user_id === u.id : true)));
+  // Enrich with event details so the notification list can show details
+  const filtered = db.notifications.filter((n) => (u ? (u.role === "admin" ? true : n.user_id === u.id) : true));
+  const enriched = filtered.map((n) => {
+    const ev = db.events.find((e) => e.id === n.event_id);
+    return {
+      ...n,
+      event_title: ev ? ev.title : null,
+      user_name: db.users.find((usr) => usr.id === n.user_id)?.name || null
+    };
+  });
+  return delay(enriched);
+}
+
+export function updateNotification(id, payload) {
+  const db = load();
+  const n = db.notifications.find((x) => x.id === Number(id));
+  if (!n) return Promise.reject(new Error("Notifikasi tidak ditemukan"));
+
+  const u = currentUser();
+  if (u && u.role !== "admin" && Number(n.user_id) !== Number(u.id)) {
+    return Promise.reject(new Error("Akses ditolak"));
+  }
+
+  if (u && u.role === "admin") {
+    n.message = payload.message || n.message;
+    n.is_read = payload.is_read ?? n.is_read;
+  } else {
+    n.is_read = payload.is_read ?? 1;
+  }
+
+  save(db);
+  return delay(n);
+}
+
+export function removeNotification(id) {
+  const db = load();
+  db.notifications = db.notifications.filter((x) => x.id !== Number(id));
+  save(db);
+  return delay({ message: "Notifikasi dihapus" });
+}
+
+/* ----------------------------- USERS ----------------------------- */
+export function listUsers() {
+  const db = load();
+  return delay(db.users.map(({ password, ...u }) => u));
 }

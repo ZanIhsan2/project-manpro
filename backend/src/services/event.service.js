@@ -1,4 +1,6 @@
 const eventModel = require("../models/event.model");
+const userModel = require("../models/user.model");
+const notificationModel = require("../models/notification.model");
 const ApiError = require("../utils/api-error");
 
 function findAll() {
@@ -15,12 +17,29 @@ function validatePayload(payload) {
   }
 }
 
-function create(payload, adminId) {
+async function create(payload, adminId) {
   validatePayload(payload);
-  return eventModel.create({
+  const event = await eventModel.create({
     ...payload,
     admin_id: payload.admin_id || adminId
   });
+
+  try {
+    const users = await userModel.findAll();
+    const students = users.filter((u) => u.role === "mahasiswa");
+    for (const student of students) {
+      await notificationModel.create({
+        user_id: student.id,
+        event_id: event.id,
+        message: `Event baru ditambahkan: "${event.title}". Yuk daftar!`,
+        is_read: 0
+      });
+    }
+  } catch (err) {
+    console.error("Gagal membuat notifikasi otomatis:", err);
+  }
+
+  return event;
 }
 
 async function update(id, payload) {

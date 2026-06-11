@@ -60,7 +60,7 @@ export default function EventDetail() {
   return (
     <div className="container detail">
       <div className="detail-hero">
-        <img src={event.image || FALLBACK} alt={event.title} onError={(e) => (e.currentTarget.src = FALLBACK)} />
+        <img src={event.image_path ? `/uploads/${event.image_path}` : (event.image || FALLBACK)} alt={event.title} onError={(e) => (e.currentTarget.src = FALLBACK)} />
         <span className="dh-date"><strong>{dayNum(event.start_time)}</strong><em>{monthShort(event.start_time)}</em></span>
       </div>
 

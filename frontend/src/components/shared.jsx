@@ -32,10 +32,11 @@ export function Footer() {
 const FALLBACK = "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&w=900&q=70";
 
 export function EventCard({ event, onBookmark, bookmarked }) {
+  const imageUrl = event.image_path ? `/uploads/${event.image_path}` : (event.image || FALLBACK);
   return (
     <article className="ev-card fade-up">
       <Link to={`/events/${event.id}`} className="ev-media">
-        <img src={event.image || FALLBACK} alt={event.title} loading="lazy" onError={(e) => (e.currentTarget.src = FALLBACK)} />
+        <img src={imageUrl} alt={event.title} loading="lazy" onError={(e) => (e.currentTarget.src = FALLBACK)} />
         <span className="ev-date">
           <strong>{dayNum(event.start_time)}</strong>
           <em>{monthShort(event.start_time)}</em>

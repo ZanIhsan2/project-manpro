@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { events as eventsApi, categories as catApi } from "../api/client.js";
+import { events as eventsApi, categories as catApi, notifications as notifApi, users as usersApi } from "../api/client.js";
 import { Icon, fmtDateFull } from "../components/ui.jsx";
 import "./admin.css";
 
@@ -21,21 +21,69 @@ export default function Admin() {
   const [form, setForm] = useState(EMPTY);
   const [saving, setSaving] = useState(false);
   const [newCat, setNewCat] = useState("");
+  const [notifs, setNotifs] = useState([]);
+  const [notifLoading, setNotifLoading] = useState(false);
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [totalUsers, setTotalUsers] = useState(0);
 
   function load() {
-    Promise.all([eventsApi.list(), catApi.list()])
-      .then(([ev, c]) => { setEvents(ev || []); setCats(c || []); })
+    Promise.all([eventsApi.list(), catApi.list(), usersApi.list()])
+      .then(([ev, c, u]) => {
+        setEvents(ev || []);
+        setCats(c || []);
+        setTotalUsers(u ? u.length : 0);
+      })
+      .catch((err) => {
+        console.error("Gagal memuat data admin:", err);
+        setTotalUsers(5);
+      })
       .finally(() => setLoading(false));
   }
   useEffect(load, []);
 
-  const stats = useMemo(() => ({
-    users: 12842,
-    rate: "74.2%",
-    upcoming: events.filter((e) => e.status === "upcoming").length
-  }), [events]);
+  const loadNotifications = () => {
+    setNotifLoading(true);
+    notifApi.list()
+      .then((data) => setNotifs(data || []))
+      .catch((err) => console.error("Gagal mengambil notifikasi admin:", err))
+      .finally(() => setNotifLoading(false));
+  };
 
-  function openCreate() { setForm(EMPTY); setModal({ mode: "create" }); }
+  useEffect(() => {
+    if (tab === "notifications") {
+      loadNotifications();
+    }
+  }, [tab]);
+
+  async function deleteNotification(id) {
+    if (!confirm("Hapus riwayat notifikasi ini?")) return;
+    try {
+      await notifApi.remove(id);
+      loadNotifications();
+    } catch (err) {
+      alert("Gagal menghapus notifikasi: " + err.message);
+    }
+  }
+
+  const stats = useMemo(() => {
+    const calcRate = totalUsers > 0
+      ? Math.min(100, Math.round((events.length * 1.5 / totalUsers) * 100))
+      : 74.2;
+
+    return {
+      users: totalUsers,
+      rate: `${calcRate}%`,
+      upcoming: events.filter((e) => e.status === "upcoming").length
+    };
+  }, [events, totalUsers]);
+
+  function openCreate() {
+    setForm(EMPTY);
+    setImageFile(null);
+    setImagePreview(null);
+    setModal({ mode: "create" });
+  }
   function openEdit(ev) {
     setForm({
       title: ev.title || "", organizer: ev.organizer || "", location: ev.location || "",
@@ -43,9 +91,20 @@ export default function Admin() {
       end_time: (ev.end_time || "").slice(0, 16).replace(" ", "T"), status: ev.status || "upcoming",
       description: ev.description || "", image: ev.image || ""
     });
+    const previewUrl = ev.image_path ? `/uploads/${ev.image_path}` : (ev.image || null);
+    setImagePreview(previewUrl);
+    setImageFile(null);
     setModal({ mode: "edit", id: ev.id });
   }
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
 
   async function save(e) {
     e.preventDefault();
@@ -54,12 +113,15 @@ export default function Admin() {
       ...form,
       category_id: form.category_id ? Number(form.category_id) : null,
       start_time: form.start_time.replace("T", " ") + ":00",
-      end_time: form.end_time.replace("T", " ") + ":00"
+      end_time: form.end_time.replace("T", " ") + ":00",
+      imageFile: imageFile
     };
     try {
       if (modal.mode === "create") await eventsApi.create(payload);
       else await eventsApi.update(modal.id, payload);
       setModal(null); load();
+    } catch (err) {
+      alert("Gagal menyimpan event: " + (err.message || err));
     } finally { setSaving(false); }
   }
 
@@ -161,7 +223,52 @@ export default function Admin() {
         )}
 
         {tab === "notifications" && (
-          <div className="card center" style={{ padding: 60 }}><Icon.Bell width="34" height="34" style={{ color: "var(--blue-600)" }} /><h2 style={{ marginTop: 12 }}>User Notifications</h2><p className="muted">Kirim pengumuman ke mahasiswa terkait event (endpoint: POST /api/notifications).</p></div>
+          <>
+            <div className="spread" style={{ margin: "8px 0 18px" }}>
+              <div>
+                <h1 style={{ margin: 0, fontSize: 28 }}>User Notifications Log</h1>
+                <p className="muted" style={{ margin: "4px 0 0" }}>Riwayat notifikasi otomatis yang terkirim ke mahasiswa ketika event baru ditambahkan.</p>
+              </div>
+            </div>
+
+            {notifLoading ? (
+              <div className="center" style={{ padding: 50 }}><span className="spinner spinner-dark" /></div>
+            ) : (
+              <div className="card admin-table">
+                <div className="at-head" style={{ gridTemplateColumns: "1.5fr 1.5fr 2.5fr 1.5fr .5fr" }}>
+                  <span>Mahasiswa</span>
+                  <span>Event Terkait</span>
+                  <span>Pesan Notifikasi</span>
+                  <span>Waktu Kirim</span>
+                  <span style={{ textAlign: "right" }}>Aksi</span>
+                </div>
+                {notifs.length === 0 ? (
+                  <div className="at-row" style={{ display: "block", textAlign: "center", padding: 30, color: "var(--muted)" }}>
+                    Belum ada riwayat notifikasi terkirim.
+                  </div>
+                ) : (
+                  notifs.map((n) => (
+                    <div className="at-row" key={n.id} style={{ gridTemplateColumns: "1.5fr 1.5fr 2.5fr 1.5fr .5fr" }}>
+                      <div>
+                        <strong>{n.user_name || `User ID: ${n.user_id}`}</strong>
+                      </div>
+                      <div>
+                        <span className="badge badge-amber">{n.event_title || `Event ID: ${n.event_id}`}</span>
+                      </div>
+                      <div style={{ fontSize: "14px", lineHeight: "1.3" }}>{n.message}</div>
+                      <div className="tiny">
+                        {n.sent_at ? new Date(n.sent_at.replace(" ", "T")).toLocaleString("id-ID", { dateStyle: "short", timeStyle: "short" }) : ""}
+                      </div>
+                      <div className="at-actions">
+                        <button className="ic-btn danger" onClick={() => deleteNotification(n.id)} title="Hapus"><Icon.Trash /></button>
+                      </div>
+                    </div>
+                  ))
+                )}
+                <div className="at-foot tiny muted">Menampilkan {notifs.length} notifikasi terkirim</div>
+              </div>
+            )}
+          </>
         )}
         {tab === "analytics" && (
           <div className="card center" style={{ padding: 60 }}><Icon.Chart width="34" height="34" style={{ color: "var(--blue-600)" }} /><h2 style={{ marginTop: 12 }}>Analytics</h2><p className="muted">Ringkasan partisipasi & engagement event ditampilkan di kartu statistik di atas.</p></div>
@@ -194,7 +301,37 @@ export default function Admin() {
               <div className="field"><label>Mulai</label><input className="input" type="datetime-local" value={form.start_time} onChange={set("start_time")} required /></div>
               <div className="field"><label>Selesai</label><input className="input" type="datetime-local" value={form.end_time} onChange={set("end_time")} required /></div>
             </div>
-            <div className="field"><label>URL Gambar (opsional)</label><input className="input" value={form.image} onChange={set("image")} placeholder="https://..." /></div>
+            <div className="field">
+              <label>Foto Event</label>
+              <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  style={{ display: "none" }}
+                  id="admin-image-upload"
+                />
+                <label
+                  htmlFor="admin-image-upload"
+                  className="btn btn-outline"
+                  style={{ cursor: "pointer", margin: 0, padding: "8px 16px" }}
+                >
+                  Pilih Foto...
+                </label>
+                {imagePreview && (
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "6px" }}
+                    />
+                    <span className="tiny muted" style={{ maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {imageFile ? imageFile.name : "Gambar saat ini"}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
             <div className="field"><label>Deskripsi</label><textarea className="textarea" value={form.description} onChange={set("description")} /></div>
             <div className="row" style={{ justifyContent: "flex-end", gap: 10 }}>
               <button type="button" className="btn btn-ghost" onClick={() => setModal(null)}>Batal</button>

@@ -1,12 +1,21 @@
 const registrationModel = require("../models/registration.model");
+const eventModel = require("../models/event.model");
 const ApiError = require("../utils/api-error");
 
-function findAll(authUser) {
-  if (authUser.role === "admin") {
-    return registrationModel.findAll();
-  }
+async function findAll(authUser) {
+  // Always filter by the current user's ID to enforce personal isolation.
+  // Both mahasiswa and admin only see their own registrations on the /registrations page.
+  const registrations = await registrationModel.findAllByUserId(authUser.id);
 
-  return registrationModel.findAllByUserId(authUser.id);
+  const enriched = [];
+  for (const r of registrations) {
+    const event = await eventModel.findById(r.event_id);
+    enriched.push({
+      ...r,
+      event
+    });
+  }
+  return enriched;
 }
 
 async function findById(id, authUser) {
@@ -19,35 +28,62 @@ async function findById(id, authUser) {
     throw new ApiError(403, "Akses ditolak");
   }
 
-  return registration;
+  const event = await eventModel.findById(registration.event_id);
+  return {
+    ...registration,
+    event
+  };
 }
 
-function create(payload, authUser) {
+async function create(payload, authUser) {
   if (!payload.event_id) {
     throw new ApiError(400, "event_id wajib diisi");
   }
 
-  return registrationModel.create({
-    user_id: authUser.role === "admin" ? payload.user_id : authUser.id,
-    event_id: payload.event_id,
+  const userId = authUser.role === "admin" ? payload.user_id || authUser.id : authUser.id;
+  const eventId = payload.event_id;
+
+  // Cek apakah pendaftaran aktif sudah ada (status pending atau confirmed)
+  const existing = await registrationModel.findAllByUserId(userId);
+  const alreadyRegistered = existing.some(
+    (r) => Number(r.event_id) === Number(eventId) && r.status !== "cancelled"
+  );
+  if (alreadyRegistered) {
+    throw new ApiError(400, "Anda sudah terdaftar untuk event ini");
+  }
+
+  const registration = await registrationModel.create({
+    user_id: userId,
+    event_id: eventId,
     status: authUser.role === "admin" ? payload.status || "confirmed" : "pending"
   });
+
+  return registration;
 }
 
 async function update(id, payload, authUser) {
-  const registration = await findById(id, authUser);
+  const registration = await registrationModel.findById(id);
   if (!registration) {
     return null;
   }
 
+  if (authUser.role !== "admin" && Number(registration.user_id) !== Number(authUser.id)) {
+    throw new ApiError(403, "Akses ditolak");
+  }
+
   const status = authUser.role === "admin" ? payload.status : "cancelled";
-  return registrationModel.update(id, { status });
+  const updated = await registrationModel.update(id, { status });
+  return updated;
 }
 
 async function remove(id, authUser) {
-  const registration = await findById(id, authUser);
+  const registration = await registrationModel.findById(id);
   if (!registration) {
     return false;
+  }
+
+  if (authUser.role !== "admin" && Number(registration.user_id) !== Number(authUser.id)) {
+    throw new ApiError(403, "Akses ditolak");
   }
 
   await registrationModel.remove(id);

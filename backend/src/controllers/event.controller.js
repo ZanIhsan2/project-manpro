@@ -25,7 +25,11 @@ async function getEventById(req, res, next) {
 
 async function createEvent(req, res, next) {
   try {
-    const event = await eventService.create(req.body, req.user.id);
+    const payload = { ...req.body };
+    if (req.file) {
+      payload.image_path = req.file.filename;
+    }
+    const event = await eventService.create(payload, req.user.id);
     res.status(201).json({ data: event });
   } catch (error) {
     next(error);
@@ -34,7 +38,11 @@ async function createEvent(req, res, next) {
 
 async function updateEvent(req, res, next) {
   try {
-    const event = await eventService.update(req.params.id, req.body);
+    const payload = { ...req.body };
+    if (req.file) {
+      payload.image_path = req.file.filename;
+    }
+    const event = await eventService.update(req.params.id, payload);
 
     if (!event) {
       return res.status(404).json({ message: "Event tidak ditemukan" });

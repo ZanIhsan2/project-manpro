@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 05, 2026 at 07:08 PM
+-- Generation Time: Jun 11, 2026 at 05:29 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -46,6 +46,21 @@ CREATE TABLE `category` (
   `description` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `category`
+--
+
+INSERT INTO `category` (`id`, `name`, `description`) VALUES
+(1, 'Seminar & Webinar', 'Acara berupa penyampaian materi, kuliah umum, atau diskusi publik secara daring maupun luring.'),
+(2, 'Workshop & Pelatihan', 'Kegiatan pelatihan interaktif untuk meningkatkan keterampilan praktis dan teknis mahasiswa.'),
+(3, 'Kompetisi Akademik', 'Lomba atau kejuaraan di bidang ilmiah, riset, esai, debat, dan penalaran mahasiswa.'),
+(4, 'Kompetisi Non-Akademik', 'Perlombaan di bidang minat bakat, olahraga, turnamen game (e-sports), maupun seni.'),
+(5, 'Seni & Budaya', 'Pameran, pagelaran, konser musik, festival kebudayaan, atau pertunjukan teater kampus.'),
+(6, 'Karir & Bisnis', 'Kegiatan seputar persiapan kerja, seminar kewirausahaan, expo bisnis, dan job fair.'),
+(7, 'Sosial & Pengabdian', 'Aksi sosial, pengabdian masyarakat, donor darah, dan kegiatan kerelawanan.'),
+(8, 'Keagamaan', 'Kegiatan ibadah bersama, peringatan hari besar keagamaan, atau kajian rutin di kampus.'),
+(9, 'Internal Organisasi', 'Kegiatan rapat kerja, pelantikan pengurus, atau malam keakraban (makrab) lingkup internal UKM/BEM.');
+
 -- --------------------------------------------------------
 
 --
@@ -63,7 +78,8 @@ CREATE TABLE `event` (
   `end_time` datetime NOT NULL,
   `organizer` varchar(150) DEFAULT NULL,
   `status` enum('upcoming','ongoing','done','cancelled') DEFAULT 'upcoming',
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `image_path` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -109,6 +125,15 @@ CREATE TABLE `user` (
   `role` enum('mahasiswa','admin') DEFAULT 'mahasiswa',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `user`
+--
+
+INSERT INTO `user` (`id`, `name`, `email`, `password_hash`, `role`, `created_at`) VALUES
+(1, 'Admin', 'admin@university.edu', '$2a$10$iqmEOhLQKUq1UGQSIqSA4e1R.MsLCPY83ziP1DFZ8/Tn0UQ.jKq9C', 'admin', '2026-06-11 13:57:33'),
+(2, 'Demo User', 'demo@university.edu', '$2a$10$PrZNjn3TsixuaHldSvolFeZvTMtBsO8mnVGPLdG32etQMqUVlHHey', 'mahasiswa', '2026-06-11 13:57:33'),
+(3, 'Alzafran', 'alzafran@university.edu', '$2a$10$tVnJJUHADjMBkSdchWtN2.btvK5WxXGXpHXrtElpDSyAvTORJZ1ca', 'mahasiswa', '2026-06-11 15:22:22');
 
 --
 -- Indexes for dumped tables
@@ -167,37 +192,37 @@ ALTER TABLE `user`
 -- AUTO_INCREMENT for table `bookmark`
 --
 ALTER TABLE `bookmark`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `category`
 --
 ALTER TABLE `category`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `event`
 --
 ALTER TABLE `event`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `notification`
 --
 ALTER TABLE `notification`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `registration`
 --
 ALTER TABLE `registration`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `user`
 --
 ALTER TABLE `user`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- Constraints for dumped tables
