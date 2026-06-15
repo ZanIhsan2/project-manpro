@@ -20,7 +20,7 @@ export default function Register() {
     if (!agree) return setErr("Kamu harus menyetujui Terms of Service.");
     setLoading(true);
     try {
-      await register({ name: form.name, email: form.email, password: form.password });
+      await register({ name: form.name, email: form.email, password: form.password, student_id: form.studentId });
       navigate("/", { replace: true });
     } catch (e) {
       setErr(e.message || "Registrasi gagal");

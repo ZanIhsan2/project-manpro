@@ -31,7 +31,7 @@ export function Footer() {
 
 const FALLBACK = "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&w=900&q=70";
 
-export function EventCard({ event, onBookmark, bookmarked }) {
+export function EventCard({ event, onBookmark, bookmarked, registered }) {
   const imageUrl = event.image_path ? `/uploads/${event.image_path}` : (event.image || FALLBACK);
   return (
     <article className="ev-card fade-up">
@@ -49,15 +49,18 @@ export function EventCard({ event, onBookmark, bookmarked }) {
         <div className="ev-loc"><Icon.Pin /> {event.location || "TBA"}</div>
         <div className="ev-foot">
           <Link to={`/events/${event.id}`} className="btn btn-outline btn-sm">View Detail</Link>
-          {onBookmark && (
-            <button
-              className={"heart" + (bookmarked ? " on" : "")}
-              onClick={() => onBookmark(event)}
-              title={bookmarked ? "Hapus bookmark" : "Simpan"}
-            >
-              <Icon.Heart filled={bookmarked} />
-            </button>
-          )}
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
+            {registered && <span className="badge badge-green" style={{ whiteSpace: "nowrap" }}>✓ Terdaftar</span>}
+            {onBookmark && (
+              <button
+                className={"heart" + (bookmarked ? " on" : "")}
+                onClick={() => onBookmark(event)}
+                title={bookmarked ? "Hapus bookmark" : "Simpan"}
+              >
+                <Icon.Heart filled={bookmarked} />
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </article>

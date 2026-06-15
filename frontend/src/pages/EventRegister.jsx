@@ -21,7 +21,7 @@ export default function EventRegister() {
 
   useEffect(() => {
     eventsApi.get(id).then(setEvent).finally(() => setLoading(false));
-    if (user) setForm((f) => ({ ...f, name: user.name || "", email: user.email || "" }));
+    if (user) setForm((f) => ({ ...f, name: user.name || "", email: user.email || "", studentId: user.student_id || "" }));
   }, [id, user]);
 
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.type === "checkbox" ? e.target.checked : e.target.value });

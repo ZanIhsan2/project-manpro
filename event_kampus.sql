@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 11, 2026 at 05:29 PM
+-- Generation Time: Jun 15, 2026 at 05:15 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -82,6 +82,13 @@ CREATE TABLE `event` (
   `image_path` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `event`
+--
+
+INSERT INTO `event` (`id`, `admin_id`, `category_id`, `title`, `description`, `location`, `start_time`, `end_time`, `organizer`, `status`, `created_at`, `image_path`) VALUES
+(4, 1, 6, 'adsfd', 'sdf', 'e1qwe', '2026-06-18 22:12:00', '2026-06-19 22:12:00', 'awdq', 'upcoming', '2026-06-15 15:13:01', NULL);
+
 -- --------------------------------------------------------
 
 --
@@ -96,6 +103,13 @@ CREATE TABLE `notification` (
   `is_read` tinyint(1) DEFAULT 0,
   `sent_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `notification`
+--
+
+INSERT INTO `notification` (`id`, `user_id`, `event_id`, `message`, `is_read`, `sent_at`) VALUES
+(3, 2, 4, 'Event baru ditambahkan: \"adsfd\". Yuk daftar!', 0, '2026-06-15 15:13:01');
 
 -- --------------------------------------------------------
 
@@ -123,17 +137,17 @@ CREATE TABLE `user` (
   `email` varchar(100) NOT NULL,
   `password_hash` varchar(255) NOT NULL,
   `role` enum('mahasiswa','admin') DEFAULT 'mahasiswa',
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `student_id` varchar(50) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `user`
 --
 
-INSERT INTO `user` (`id`, `name`, `email`, `password_hash`, `role`, `created_at`) VALUES
-(1, 'Admin', 'admin@university.edu', '$2a$10$iqmEOhLQKUq1UGQSIqSA4e1R.MsLCPY83ziP1DFZ8/Tn0UQ.jKq9C', 'admin', '2026-06-11 13:57:33'),
-(2, 'Demo User', 'demo@university.edu', '$2a$10$PrZNjn3TsixuaHldSvolFeZvTMtBsO8mnVGPLdG32etQMqUVlHHey', 'mahasiswa', '2026-06-11 13:57:33'),
-(3, 'Alzafran', 'alzafran@university.edu', '$2a$10$tVnJJUHADjMBkSdchWtN2.btvK5WxXGXpHXrtElpDSyAvTORJZ1ca', 'mahasiswa', '2026-06-11 15:22:22');
+INSERT INTO `user` (`id`, `name`, `email`, `password_hash`, `role`, `created_at`, `student_id`) VALUES
+(1, 'Admin', 'admin@university.edu', '$2a$10$iqmEOhLQKUq1UGQSIqSA4e1R.MsLCPY83ziP1DFZ8/Tn0UQ.jKq9C', 'admin', '2026-06-11 13:57:33', NULL),
+(2, 'Demo User', 'demo@university.edu', '$2a$10$PrZNjn3TsixuaHldSvolFeZvTMtBsO8mnVGPLdG32etQMqUVlHHey', 'mahasiswa', '2026-06-11 13:57:33', NULL);
 
 --
 -- Indexes for dumped tables
@@ -204,25 +218,25 @@ ALTER TABLE `category`
 -- AUTO_INCREMENT for table `event`
 --
 ALTER TABLE `event`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `notification`
 --
 ALTER TABLE `notification`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `registration`
 --
 ALTER TABLE `registration`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `user`
 --
 ALTER TABLE `user`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- Constraints for dumped tables

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { events as eventsApi, categories as catApi, bookmarks as bmApi } from "../api/client.js";
+import { events as eventsApi, categories as catApi, bookmarks as bmApi, registrations as regApi } from "../api/client.js";
 import { EventCard } from "../components/shared.jsx";
 import { Icon, parseDate } from "../components/ui.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
@@ -17,6 +17,7 @@ export default function Events() {
   const [events, setEvents] = useState([]);
   const [cats, setCats] = useState([]);
   const [bookmarks, setBookmarks] = useState([]);
+  const [regs, setRegs] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [q, setQ] = useState("");
@@ -27,11 +28,15 @@ export default function Events() {
   function loadBookmarks() {
     if (user) bmApi.list().then((b) => setBookmarks(b || [])).catch(() => {});
   }
+  function loadRegistrations() {
+    if (user) regApi.list().then((r) => setRegs(r || [])).catch(() => {});
+  }
   useEffect(() => {
     Promise.all([eventsApi.list(), catApi.list()])
       .then(([ev, c]) => { setEvents(ev || []); setCats(c || []); })
       .finally(() => setLoading(false));
     loadBookmarks();
+    loadRegistrations();
   }, [user]);
 
   const locations = useMemo(
@@ -40,6 +45,7 @@ export default function Events() {
   );
 
   const bmIds = new Set(bookmarks.map((b) => b.event_id));
+  const regIds = new Set(regs.map((r) => r.event_id));
 
   async function toggleBookmark(ev) {
     if (!user) { window.location.href = "/login"; return; }
@@ -123,7 +129,7 @@ export default function Events() {
           ) : (
             <div className="ev-grid">
               {filtered.map((e) => (
-                <EventCard key={e.id} event={e} onBookmark={toggleBookmark} bookmarked={bmIds.has(e.id)} />
+                <EventCard key={e.id} event={e} onBookmark={toggleBookmark} bookmarked={bmIds.has(e.id)} registered={regIds.has(e.id)} />
               ))}
             </div>
           )}

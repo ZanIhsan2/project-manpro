@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { events as eventsApi, bookmarks as bmApi } from "../api/client.js";
+import { events as eventsApi, bookmarks as bmApi, registrations as regApi } from "../api/client.js";
 import { EventCard } from "../components/shared.jsx";
 import { Icon, fmtDateFull, fmtTimeRange, dayNum, monthShort } from "../components/ui.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
@@ -22,6 +22,7 @@ export default function EventDetail() {
   const [related, setRelated] = useState([]);
   const [bookmarked, setBookmarked] = useState(false);
   const [bmId, setBmId] = useState(null);
+  const [regs, setRegs] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -38,8 +39,15 @@ export default function EventDetail() {
         setBookmarked(!!b);
         setBmId(b ? b.id : null);
       }).catch(() => {});
+
+      regApi.list().then((rs) => {
+        setRegs(rs || []);
+      }).catch(() => {});
     }
   }, [id, user]);
+
+  const regIds = new Set(regs.map((r) => r.event_id));
+  const registered = regIds.has(Number(id));
 
   async function toggleBookmark() {
     if (!user) return navigate("/login", { state: { from: `/events/${id}` } });
@@ -105,7 +113,22 @@ export default function EventDetail() {
               <span className="price">{free ? "Free" : `Rp${Number(event.price).toLocaleString("id-ID")}`}</span>
               {free && <span className="price-old">Rp15.000</span>}
             </div>
-            <button className="btn btn-primary btn-block" onClick={() => navigate(`/events/${id}/register`)}>Register Now</button>
+            {registered ? (
+              <button
+                className="btn btn-block"
+                style={{
+                  backgroundColor: "var(--green)",
+                  borderColor: "var(--green)",
+                  color: "#fff",
+                  cursor: "default"
+                }}
+                disabled
+              >
+                ✓ Anda Sudah Terdaftar
+              </button>
+            ) : (
+              <button className="btn btn-primary btn-block" onClick={() => navigate(`/events/${id}/register`)}>Register Now</button>
+            )}
             <button className={"btn btn-outline btn-block" + (bookmarked ? " on" : "")} style={{ marginTop: 10 }} onClick={toggleBookmark}>
               <Icon.Bookmark width="16" height="16" /> {bookmarked ? "Bookmarked" : "Bookmark Event"}
             </button>
@@ -127,7 +150,9 @@ export default function EventDetail() {
         <section style={{ marginTop: 40 }}>
           <h2 style={{ marginBottom: 18 }}>Related Events</h2>
           <div className="ev-grid">
-            {related.map((e) => <EventCard key={e.id} event={e} />)}
+            {related.map((e) => (
+              <EventCard key={e.id} event={e} registered={regIds.has(e.id)} />
+            ))}
           </div>
         </section>
       )}
