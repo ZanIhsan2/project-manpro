@@ -1,6 +1,6 @@
 const pool = require("../db/pool");
 
-const SAFE_COLUMNS = "id, name, email, role, created_at";
+const SAFE_COLUMNS = "id, name, email, role, student_id, created_at";
 
 async function findAll() {
   const [rows] = await pool.query(`SELECT ${SAFE_COLUMNS} FROM user ORDER BY id DESC`);
@@ -20,8 +20,8 @@ async function findByEmail(email, includePassword = false) {
 
 async function create(payload) {
   const [result] = await pool.query(
-    "INSERT INTO user (name, email, password_hash, role) VALUES (?, ?, ?, ?)",
-    [payload.name, payload.email, payload.password_hash, payload.role]
+    "INSERT INTO user (name, email, password_hash, role, student_id) VALUES (?, ?, ?, ?, ?)",
+    [payload.name, payload.email, payload.password_hash, payload.role, payload.student_id || null]
   );
 
   return findById(result.insertId);
@@ -30,13 +30,13 @@ async function create(payload) {
 async function update(id, payload) {
   if (payload.password_hash) {
     await pool.query(
-      "UPDATE user SET name = ?, email = ?, password_hash = ?, role = ? WHERE id = ?",
-      [payload.name, payload.email, payload.password_hash, payload.role, id]
+      "UPDATE user SET name = ?, email = ?, password_hash = ?, role = ?, student_id = ? WHERE id = ?",
+      [payload.name, payload.email, payload.password_hash, payload.role, payload.student_id || null, id]
     );
   } else {
     await pool.query(
-      "UPDATE user SET name = ?, email = ?, role = ? WHERE id = ?",
-      [payload.name, payload.email, payload.role, id]
+      "UPDATE user SET name = ?, email = ?, role = ?, student_id = ? WHERE id = ?",
+      [payload.name, payload.email, payload.role, payload.student_id || null, id]
     );
   }
 

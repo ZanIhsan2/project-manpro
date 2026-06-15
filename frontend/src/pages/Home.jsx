@@ -1,13 +1,16 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { events as eventsApi, categories as catApi } from "../api/client.js";
+import { events as eventsApi, categories as catApi, registrations as regApi } from "../api/client.js";
 import { EventCard } from "../components/shared.jsx";
 import { Icon } from "../components/ui.jsx";
+import { useAuth } from "../context/AuthContext.jsx";
 import "./home.css";
 
 export default function Home() {
+  const { user } = useAuth();
   const [events, setEvents] = useState([]);
   const [cats, setCats] = useState([]);
+  const [regs, setRegs] = useState([]);
   const [active, setActive] = useState("All");
   const [q, setQ] = useState("");
   const [loading, setLoading] = useState(true);
@@ -19,13 +22,19 @@ export default function Home() {
         setCats(c || []);
       })
       .finally(() => setLoading(false));
-  }, []);
+
+    if (user) {
+      regApi.list().then((r) => setRegs(r || [])).catch(() => {});
+    }
+  }, [user]);
 
   const filtered = events.filter((e) => {
     const byCat = active === "All" || e.category_name === active;
     const byQ = !q || e.title.toLowerCase().includes(q.toLowerCase()) || (e.organizer || "").toLowerCase().includes(q.toLowerCase());
     return byCat && byQ;
   });
+
+  const regIds = new Set(regs.map((r) => r.event_id));
 
   return (
     <>
@@ -94,7 +103,7 @@ export default function Home() {
           ) : (
             <div className="ev-grid">
               {filtered.slice(0, 6).map((e) => (
-                <EventCard key={e.id} event={e} />
+                <EventCard key={e.id} event={e} registered={regIds.has(e.id)} />
               ))}
             </div>
           )}

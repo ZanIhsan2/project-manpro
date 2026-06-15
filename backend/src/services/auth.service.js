@@ -19,7 +19,7 @@ function createToken(user) {
 }
 
 async function register(payload) {
-  const { name, email, password } = payload;
+  const { name, email, password, student_id } = payload;
 
   if (!name || !email || !password) {
     throw new ApiError(400, "Nama, email, dan password wajib diisi");
@@ -35,7 +35,8 @@ async function register(payload) {
     name,
     email,
     password_hash: passwordHash,
-    role: "mahasiswa"
+    role: "mahasiswa",
+    student_id: student_id || null
   });
 
   return {
